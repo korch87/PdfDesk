@@ -608,6 +608,17 @@ final class ScannerHelper: NSObject, ICDeviceBrowserDelegate, ICScannerDeviceDel
 
     // MARK: ICDeviceDelegate
 
+    func didRemove(_ device: ICDevice) {
+        scanners.removeAll { $0 === device }
+        guard let target = targetDevice, device === target else { return }
+        if stage == .closingSession {
+            finishSuccessfully()
+            return
+        }
+        reportAndExit(helperFailure("device_removed",
+            "Сканер отключён во время операции.", exit: ExitCode.transferFailed))
+    }
+
     func device(_ device: ICDevice, didOpenSessionWithError error: Error?) {
         guard stage == .openingSession, let scanner = device as? ICScannerDevice else { return }
         if let error = error {

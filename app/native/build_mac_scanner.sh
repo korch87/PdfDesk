@@ -45,7 +45,7 @@ if ! command -v swiftc >/dev/null 2>&1; then
 fi
 
 frameworks=(-framework ImageCaptureCore -framework ImageIO -framework CoreGraphics)
-common=(-O -swift-version "${SWIFT_VERSION}" "${frameworks[@]}")
+common=(-O -parse-as-library -swift-version "${SWIFT_VERSION}" "${frameworks[@]}")
 
 mkdir -p "$(dirname "${OUTPUT}")"
 
