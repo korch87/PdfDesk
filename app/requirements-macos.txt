@@ -1,0 +1,11 @@
+# macOS 12 Monterey baseline. PySide6 6.9.3 ships a universal2 wheel tagged
+# macOS 12.0; the Windows requirements use Qt 6.12 and are intentionally separate.
+PySide6-Essentials==6.9.3
+pypdf==6.19.0
+# 5.12+ uses PDFium wheels requiring macOS 13; 5.11.0 has native macOS 12
+# wheels for both Intel and Apple Silicon.
+pypdfium2==5.11.0
+reportlab==5.0.1
+Pillow==12.3.0
+cryptography==50.0.2
+PyInstaller==6.22.3

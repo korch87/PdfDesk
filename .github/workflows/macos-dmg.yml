@@ -1,0 +1,70 @@
+name: Build macOS DMG (Intel)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pdfdesk-macos-intel-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Get project sources
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up native Intel Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          architecture: x64
+
+      - name: Check build host and scripts
+        run: |
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = x86_64
+          python3.12 -c 'import platform; assert platform.machine() == "x86_64"'
+          xcode-select -p
+          bash -n scripts/build-macos.sh
+          bash -n scripts/verify-macos.sh
+          bash -n scripts/package-macos-dmg.sh
+
+      - name: Build app and check packaged startup
+        env:
+          PYTHON_BIN: python3.12
+        run: bash scripts/build-macos.sh
+
+      - name: Create and verify DMG
+        run: bash scripts/package-macos-dmg.sh --app app/dist-macos/x86_64/PdfDesk.app
+
+      - name: Downloadable installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: PdfDesk-macos-Intel-DMG
+          path: outputs/releases/PdfDesk-macos-x86_64.dmg
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Preserve build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: PdfDesk-macos-Intel-diagnostics
+          path: |
+            app/tmp/mac-verification/x86_64/**/verification-report.txt
+            app/tmp/mac-verification/x86_64/**/smoke-report.json
+            app/tmp/mac-verification/x86_64/**/smoke.log
+            outputs/releases/*.sha256
+            outputs/releases/*-dmg-build-report.txt
+          if-no-files-found: ignore
+          retention-days: 14

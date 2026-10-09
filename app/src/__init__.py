@@ -1,0 +1,1 @@
+"""PdfDesk desktop application."""
